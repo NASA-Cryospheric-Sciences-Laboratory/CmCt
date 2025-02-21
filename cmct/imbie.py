@@ -30,7 +30,8 @@ def process_model_data(mod_ds,time_var, IMBIE_total_mass_change_sum, \
         
     # Set start_date as the first date in 'Year' and filtered_time_var as all subsequent dates
     start_date_imbie = start_date_fract
-    filtered_time_var = IMBIE_total_mass_change_sum['Year'].iloc[0:]
+    # filtered_time_var = IMBIE_total_mass_change_sum['Year'].iloc[0:]
+    filtered_time_var = IMBIE_total_mass_change_sum['Year'].values
     
     #calculate area = x_resolution*y_resolution
     x_coords = mod_ds['x'].values
@@ -41,8 +42,7 @@ def process_model_data(mod_ds,time_var, IMBIE_total_mass_change_sum, \
     # Create a list of Point geometries from coordinate grids
     points = [Point(x, y) for x in x_coords for y in y_coords]
     
-    # # Initialize a dictionary to store residuals
-    # model_mass_change = {}
+
     # Initialize an empty list to store rows
     model_mass_change_rows = []
     
@@ -109,14 +109,7 @@ def process_model_data(mod_ds,time_var, IMBIE_total_mass_change_sum, \
         model_total_mass_balance_masked = basin_mass_change_sums.sum()
           
 
-        # Store the residual in the dictionary for the current time step
-        # model_mass_change[str(time_step)] = {
-        #     'model_total_mass_balance_unmasked': model_total_mass_balance_unmasked,
-        #     'model_total_mass_balance_masked': model_total_mass_balance_masked,
-        #     'basin_mass_change_sums': basin_mass_change_sums,
-        #     'region_mass_change_sums': region_mass_change_sums
-        # } 
-
+        # Store the residual for the current time step
         row = {
             'Time_Step': str(time_step),  # Convert time_step to string for consistency
             'model_total_mass_balance_unmasked': model_total_mass_balance_unmasked,
@@ -127,8 +120,8 @@ def process_model_data(mod_ds,time_var, IMBIE_total_mass_change_sum, \
         model_mass_change_rows.append(row)
     
     # Convert the list of rows into a DataFrame
-    model_mass_change_df = pd.DataFrame(model_mass_change_rows)    
-      
+    model_mass_change_df = pd.DataFrame(model_mass_change_rows)  
+    
     # Return all results as a dictionary
     return model_mass_change_df
 
@@ -166,7 +159,7 @@ def process_imbie_data(obs_filename,start_date_fract,end_date_fract,mass_balance
     
     # Filter data between start_date_converted and end_date_converted (inclusive)
     filtered_data = mass_balance_data[
-        (mass_balance_data['Year'] > start_date_fract) & (mass_balance_data['Year'] <= end_date_fract)
+        (mass_balance_data['Year'] >= start_date_fract) & (mass_balance_data['Year'] <= end_date_fract)
     ].copy()
     
     
