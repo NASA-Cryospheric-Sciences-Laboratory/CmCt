@@ -149,36 +149,6 @@ def process_imbie_data(obs_filename,start_date_fract,end_date_fract,mass_balance
     # Check if the column exists in the DataFrame
     if mass_balance_column not in mass_balance_data.columns:
         raise ValueError(f"Error: The column '{mass_balance_column}' does not exist in the CSV file.")
-
-    # Define columns to interpolate
-    columns_to_interpolate = ['Mass balance (Gt/yr)', 'Mass balance uncertainty (Gt/yr)',
-                              'Cumulative mass balance (Gt)', 'Cumulative mass balance uncertainty (Gt)']
-    
-    # Function to check if a value exists in the Year column
-    def check_and_interpolate(target_year, df):
-        if target_year in df['Year'].values:
-            return None  # No interpolation needed
-        # Perform interpolation for missing year
-        interpolated_values = {col: np.interp(target_year, df['Year'], df[col]) for col in columns_to_interpolate}
-        return {'Year': target_year, **interpolated_values}
-    
-    # Interpolate start and end if they are not in the dataset
-    interpolated_entries = [check_and_interpolate(start_date_fract, mass_balance_data),
-                            check_and_interpolate(end_date_fract, mass_balance_data)]
-    
-    # Remove None entries (i.e., when start_date_fract or end_date_fract already exists)
-    interpolated_entries = [entry for entry in interpolated_entries if entry is not None]
-    
-    # Convert interpolated data to DataFrame if any new entries exist
-    if interpolated_entries:
-        interpolated_df = pd.DataFrame(interpolated_entries)
-        # Append and sort by Year
-        mass_balance_data = pd.concat([mass_balance_data, interpolated_df], ignore_index=True).sort_values(by='Year')
-    
-    # Reset index for consistency
-    mass_balance_data = mass_balance_data.reset_index(drop=True)
-
-
   
     # Get the initial mass balance value for the start date
     data_start_date = mass_balance_data[mass_balance_data['Year'] == start_date_fract]
@@ -391,7 +361,7 @@ def write_and_display_mass_change_comparison_all_dates(icesheet, basin_result, r
     
                 data_rows.append([date, 'Masked_Total', model_total_mass_balance_masked, imbie_total_mass_change_sum, delta_masschange_masked])
     
-                # print(f"{date:<15} {'Masked_Total':<20} {model_total_mass_balance_masked:<25} {imbie_total_mass_change_sum:<25} {delta_masschange_masked:<20}")
+
                 print(f"{date:.4f} {'Masked_Total':<20} {model_total_mass_balance_masked:<25} {imbie_total_mass_change_sum:<25} {delta_masschange_masked:<20}")
 
     
@@ -452,23 +422,7 @@ def  write_mass_change_comparison_all_dates(icesheet, basin_result, results, mas
         if icesheet == "AIS" and print_regionalresult_check == 'YES' and isinstance(first_entry['region_mass_change_sums'], pd.Series):
             regions = list(first_entry['region_mass_change_sums'].index)
     
-    # # Add rows for each basin with zero values for the start_date
-    # for basin in basins:
-    #     data_rows.append([start_date_fract, basin, "0.00", "--", "--"])
-    
-    # Add rows for each region with zero values for the start_date 
-    # if icesheet == "AIS" and print_regionalresult_check == 'YES':
-        # for region in regions:
-        #     data_rows.append([start_date_fract, region, "0.00", "0.00", "0.00"])
-    
-    # # Add totals (masked and unmasked) with zero values for the start_date
-    # data_rows.append([start_date_fract, 'Masked_Total', "0.00", "0.00", "0.00"])
-    # data_rows.append([start_date_fract, 'Unmasked_Total', "0.00", "0.00", "0.00"])
-    
-    # # Print the table header
-    # print(f"\n Time-varying Mass change comparison ({mass_balance_type}): {start_date_fract} - {end_date_fract}")
-    # print(f"{'Date':<15} {'Basin/Region':<20} {'Model mass change (Gt)':<25} {'IMBIE mass change (Gt)':<25} {'Residual (Gt)':<20}")
-    
+  
     # Process only valid dates in results
     for date in model_imbie_df['Year']:
         try:
