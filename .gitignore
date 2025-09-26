@@ -182,3 +182,4 @@ cython_debug/
 *.out
 *.app
 *_main
+*.nc
